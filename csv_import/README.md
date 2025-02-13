@@ -3,7 +3,9 @@
 - [📌 Conceptos Clave](#-conceptos-clave)  
   - [CSV (Comma-Separated Values)](#csv-comma-separated-values)  
   - [TSV (Tab-Separated Values)](#tsv-tab-separated-values)  
-  - [UTF-8 (Formato de Datos)](#utf-8-formato-de-datos)  
+  - [UTF-8 (Formato de Datos)](#utf-8-formato-de-datos)
+  - [Raw (Versión sin procesar)](#raw-versión-sin-procesar)
+  - [Transacción en Neo4j](#transacción-en-neo4j)
 - [📂 Archivos Importantes](#-archivos-importantes)  
 - [🛠️ Pasos para la Importación](#️-pasos-para-la-importación)  
   - [1. Comprender la Estructura de los Datos](#1-comprender-la-estructura-de-los-datos)  
@@ -51,11 +53,35 @@ Es una codificación de caracteres ampliamente utilizada que puede representar c
 - `ñ` (Carácter especial en español)
 - `✓` (Símbolo de verificación)
 
+### Raw (Versión sin procesar)
+
+En GitHub, cuando se hace clic en el enlace "Raw" de un archivo, se obtiene el contenido del archivo sin ningún formato o presentación adicional. Es una versión del archivo tal como está, útil para descargarlo o usarlo directamente en su formato original.
+
+**Ejemplo de URL raw:**
+
+```markdown
+https://raw.githubusercontent.com/JosueSay/Neo4j_Documentation/refs/heads/main/csv_import/data/ventas_tienda_departamento_formated.csv
+```
+
+### Transacción en Neo4j
+
+Son unidades de ejecución que agrupan varias operaciones para asegurar que se ejecuten de forma segura y consistente. Si ocurre un error, toda la transacción se revierte.
+
+**Ejemplo de transacciones:**
+
+```sql
+LOAD CSV WITH HEADERS FROM 'file:///datos.csv' AS row
+CALL { WITH row
+  MERGE (n:Etiqueta {nombre: row.nombre})
+} IN TRANSACTIONS OF 100 ROWS;
+```
+
 ## 📂 Archivos Importantes
 
 ```bash
 ├── images/                    # Imágenes de apoyo
 ├── data/                      # Carpeta donde están los dataset de tipo `.csv`
+├── detalle_load_csv.md        # Archivo md que detalla más a profundidad la función LOAD CSV de cypher neo4j
 ├── code.cql                   # Archivos con los querys para Neo4j para la importación
 ├── cambiar_delimitador.py     # Scripts en python para cambiar el delimitador de un archivo `.csv`
 ├── cambiar_formato.py         # Scripts en python para cambiar el formato de un archivo `.csv`
@@ -273,6 +299,124 @@ RETURN n, r, m;
 
 ### 5. Importar los Datos Usando Cypher
 
+Utilizando la misma instancia creada en el paso 4, primero eliminaremos todos los datos para realizar la importación desde Cypher:
+
+```sql
+MATCH (n)
+DETACH DELETE n;
+DROP CONSTRAINT `fecha_Venta_uniq`;
+DROP CONSTRAINT `nombre_Marca_uniq`;
+DROP CONSTRAINT `nombre_Tienda_uniq`;
+DROP CONSTRAINT `tipo_Producto_uniq`;
+```
+
+#### Métodos de Importación
+
+Existen dos métodos principales para importar datos en Neo4j:
+
+1. **`LOAD CSV`**: Este comando es ideal para conjuntos de datos pequeños o medianos (hasta 10 millones de registros). Funciona en cualquier configuración, incluyendo **AuraDB**.
+2. **`neo4j-admin database import`**: Es una herramienta de línea de comandos para la carga de grandes volúmenes de datos. Se usa en **Neo4j Desktop**, **Neo4j EE Docker** e instalaciones locales.
+
+En este caso, usaremos **AuraDB** y necesitaremos un método para acceder a los datos del CSV.
+
+##### Subir el CSV a un Repositorio en GitHub
+
+1. Subimos el archivo CSV a un repositorio de GitHub.
+2. Vamos al archivo en GitHub y presionamos la opción **RAW** para obtener el enlace al archivo en formato crudo:
+
+![CSV en Repositorio](./images/csv_repositorio.png "CSV en Repositorio")
+
+![RAW CSV del Repositorio](./images/raw_csv_repositorio.png "RAW CSV del Repositorio")
+
+Ejemplo de enlace generado:
+
+```markdown
+https://raw.githubusercontent.com/JosueSay/Neo4j_Documentation/refs/heads/main/csv_import/data/ventas_tienda_departamento_formated.csv
+```
+
+##### Alternativa: Usar Gist de GitHub
+
+Otra opción es usar **Gist de GitHub** para alojar el CSV:
+
+1. Accedemos a `Gist GitHub` desde la sección [Enlaces de Herramientas Utilizadas](#enlaces-de-herramientas-utilizadas).
+2. Creamos un nuevo Gist con el contenido del CSV.
+3. Lo publicamos como **Público** y copiamos el enlace **RAW**.
+
+![CSV en Gist GitHub](./images/csv_gist.png "CSV en Gist GitHub")
+
+![Creación Gist CSV](./images/creacion_gist_csv.png "Creación Gist CSV")
+
+Enlace generado:
+
+```markdown
+https://gist.githubusercontent.com/JosueSay/7bbb5d5504463ce23056d468dd8077e4/raw/abdb23826c36770e3a9d5a4f4544cd53da32b990/ventas_tienda_departamento_formated.csv
+```
+
+Ambos métodos funcionan. En este caso, utilizaremos **Neo4j Console**, pero los queries también son compatibles con **Neo4j Browser**.
+
+---
+
+#### Uso de `LOAD CSV` en Neo4j
+
+- **Función**: Importa datos desde archivos CSV a Neo4j.
+- **Fuentes**:
+  - Archivos locales: `file:///archivo.csv`
+  - URLs remotas: `http://`, `https://`, `ftp://`
+  - Servicios en la nube: `azb://` (Azure), `gs://` (Google Cloud), `s3://` (AWS S3)
+- **Cláusulas clave**:
+  - `LOAD CSV FROM 'url' AS row`: Carga el CSV fila por fila.
+  - `WITH HEADERS`: Usa la primera fila como nombres de columnas.
+  - `MERGE`: Crea o fusiona nodos/relaciones a partir de los datos.
+  - `FIELDTERMINATOR ';'`: Define un delimitador personalizado.
+- **Seguridad**:
+  - Prefiere URLs con `HTTPS`.
+  - Se recomienda configurar permisos en archivos locales.
+- **Manejo de datos**:
+  - Conversión de tipos (`toInteger()`, `date()`, `split()`).
+  - Manejo de valores nulos (`coalesce()`, `nullIf()`).
+  - Uso de listas (`split()`).
+- **Optimización**:
+  - Carga en transacciones (`CALL { ... } IN TRANSACTIONS`).
+  - Creación de restricciones de unicidad antes de importar.
+- **Compatibilidad**:
+  - Soporta importación dinámica de etiquetas y CSV comprimidos (`.zip`, `.gzip`).
+
+Para ver mas detalle de la instrucción LOAD CSV puedes revisar la documentación `detalle_load_csv.md`.
+
+##### Importación con `LOAD CSV`
+
+Dado que nuestro CSV tiene **800 registros y 10 variables**, **es adecuado para `LOAD CSV`**.
+
+1. **Verificar CSV**
+
+   - Antes de importar, verificamos la estructura del archivo:
+
+     ![Verificación CSV](./images/verificacion_csv.png "Verificación CSV")
+
+2. **Crear Nodos**
+
+   - Ejecutamos la importación de nodos en **Neo4j Console**:
+
+     ![Creación de Nodos Cypher](./images/creacion_nodos_cypher.png "Creación de Nodos Cypher")
+
+3. **Crear Relaciones**
+
+   - Generamos las relaciones entre los nodos:
+
+     ![Creación de Relaciones Cypher](./images/creacion_relaciones_cypher.png "Creación de Relaciones Cypher")
+
+4. **Resultado Final**
+
+   - El modelo final representado en forma de grafo:
+
+     ![Grafo Final Cypher](./images/grafo_final_cypher.png "Grafo Final Cypher")
+
+Los queries utilizados se encuentran en el archivo:
+
+```markdown
+code.cql
+```
+
 ## 🔗 Enlaces Útiles
 
 ### Enlaces de Herramientas Utilizadas
@@ -282,10 +426,12 @@ RETURN n, r, m;
 - [Data Importer Neo4j](https://data-importer.neo4j.io/)
 - [Arrows App Modelar Datos](https://arrows.app/#/local/id=50Jx0RywfReyZzq4_SXx)
 - [Data Origen CSV](https://github.com/VictorGuevaraP/Mineria-de-datos/blob/master/Ventas%20tienda%20por%20departamento.csv)
+- [Gist GitHub](https://gist.github.com/)
 
 ### Enlaces de Documentación
 
 - [Neo4j](https://neo4j.com/)
+- [Formas de Importar Archivos CSV](https://neo4j.com/docs/getting-started/data-import/csv-import/#optimizing-load-csv)
 - [Documentación para la Importación de Datos en Neo4j por AuraDB](https://neo4j.com/docs/data-importer/current/)
 - [Documentación para la Importación de Datos en Neo4j Por Cypher](https://neo4j.com/docs/cypher-manual/current/clauses/load-csv/)
 - [Video Referencia 1](https://www.youtube.com/watch?v=Jro1MMzUAgs)

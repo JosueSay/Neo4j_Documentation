@@ -12,6 +12,8 @@
   - [4. Importar los Datos con Data Importer](#4-importar-los-datos-con-data-importer)  
   - [5. Importar los Datos Usando Cypher](#5-importar-los-datos-usando-cypher)  
 - [🔗 Enlaces Útiles](#-enlaces-útiles)
+  - [Enlaces de Herramientas Utilizadas](#enlaces-de-herramientas-utilizadas)
+  - [Enlaces de Documentación](#enlaces-de-documentación)
 
 ## 📌 Conceptos Clave
 
@@ -76,8 +78,8 @@ Analizar los datos de origen para identificar sus características, relaciones y
 6. **Color**: *(String)* – Color del producto (por ejemplo, "Azul", "Negro", "Multicolor").
 7. **Categoría**: *(String)* – Categoría del producto (por ejemplo, "Pantalon", "Zapatillas", "Ropa interior").
 8. **Precio de venta S/**: *(Float)* – Precio de venta en soles (por ejemplo, 89.0, 159.0).
-9. **Fecha**: *(Date)* – Fecha de la transacción en formato DD/MM/AAAA (por ejemplo, 15/07/2015).
-10. **Hora**: *(Time)* – Hora de la transacción en formato HH:MM:SS (por ejemplo, 07:32:00).
+9. **Fecha**: *(String)* – Fecha de la transacción en formato DD/MM/AAAA (por ejemplo, 15/07/2015).
+10. **Hora**: *(String)* – Hora de la transacción en formato HH:MM:SS (por ejemplo, 07:32:00).
 
 **Observaciones:**
 
@@ -87,6 +89,7 @@ Analizar los datos de origen para identificar sus características, relaciones y
   - La "Talla" puede ser un solo valor o un rango, lo que podría requerir limpieza o estandarización.
   - La "Marca" y "Tipo" están bien definidas pero podrían contener inconsistencias si el dataset completo es grande (diferencias de mayúsculas, errores tipográficos, etc.).
   - El "Color" tiene valores como "Multicolor", lo que podría ser un desafío para categorizar.
+  - Se puede unir en una columna extra las columnas "Fecha" y "Hora" ya que neo4j maneja un tipo de date `datetime` unidos, para este ejemplo se utilizaran como strings.
 - **Entidades identificables**: Tienda, Marca, Producto, Categoría, Venta (transacción).
 
 ### 2. Diseñar el Modelo de Datos
@@ -114,9 +117,9 @@ Definir cómo se representarán los datos en el grafo, incluyendo nodos, relacio
 - `(Venta)-[:INCLUYE]->(Producto)`
 - `(Tienda)-[:REALIZA]->(Venta)`
 
-Para ver el modelo se puede utilizar el `Arrows App` el enlace está en la sección de [Enlaces Útiles](#-enlaces-útiles)
+Para ver el modelo se puede utilizar el `Arrows App` el enlace está en la sección de [Enlaces de Herramientas Utilizadas](#enlaces-de-herramientas-utilizadas)
 
-![alt text](image.png)
+![Modelación de Datos](./images/modelacion_datos.png "Modelación de Datos")
 
 ### 3. Preparar los Datos para la Importación
 
@@ -185,15 +188,105 @@ Para realizar estos cambios de forma más rápida y automatizada, puedes usar lo
 
 ### 4. Importar los Datos con Data Importer
 
+Para comenzar, debemos crear una instancia en Neo4j. Esto se realiza accediendo al enlace de `Neo4j Console`, que se encuentra en la sección de [Enlaces de Herramientas Utilizadas](#enlaces-de-herramientas-utilizadas). Una vez creada la instancia, se nos ofrecerá la opción de guardar las credenciales, las cuales debemos descargar, ya que contienen los datos necesarios para establecer la conexión con Data Importer:
+
+![Credenciales](./images/credenciales.png "Credenciales")
+
+Al abrir el archivo descargado, encontraremos los siguientes datos:
+
+```bash
+NEO4J_URI=neo4j+s://url
+NEO4J_USERNAME=username
+NEO4J_PASSWORD=password
+AURA_INSTANCEID=instance_id
+AURA_INSTANCENAME=instance_name
+```
+
+En la sección de [Enlaces de Herramientas Utilizadas](#enlaces-de-herramientas-utilizadas) encontrarás un enlace para acceder a `Data Importer Neo4j`. Una vez dentro, se nos pedirá conectar la instancia proporcionando los datos necesarios.
+
+![Conexión Data Importer](./images/conexion_data_importer.png "Conexión Data Importer")
+
+Una vez conectados, podremos cargar los archivos CSV, ya sea arrastrándolos o seleccionándolos manualmente.
+
+![Cargar CSV](./images/cargar_csv.png "Cargar CSV")
+
+#### Crear Nodos
+
+Una vez cargado el CSV, podremos crear nodos:
+
+![Agregar Nodos1](./images/agregar_nodos1.png "Agregar Nodos1")
+
+Para crear un nodo, debemos proporcionar los siguientes datos:
+
+1. **Label**: Nombre del nodo.
+2. **File**: Selección del archivo CSV que contiene los datos correspondientes al nodo (es posible cargar varios archivos CSV, no solo uno).
+3. **Properties**: Aquí podemos añadir propiedades al nodo haciendo clic en el botón "+" y configurando el nombre de la propiedad, el tipo de dato y la columna que contiene los datos. También existe la opción "Map From File", que permite importar varias columnas de datos directamente.
+
+Al completar los datos, la interfaz mostrará un check verde sobre el nodo, indicando que los datos se ingresaron correctamente:
+
+![Agregar Nodos2](./images/agregar_nodos2.png "Agregar Nodos2")
+
+#### Agregar Más Nodos
+
+Si necesitamos agregar más nodos, podemos utilizar la segunda opción en la interfaz:
+
+![Agregar Nodos3](./images/agregar_nodos3.png "Agregar Nodos3")
+
+#### Crear Relaciones
+
+Para establecer relaciones entre nodos, simplemente arrastramos el borde de un nodo hacia otro y completamos los campos (en este caso, solo el nombre de la relación).
+
+![Agregar Relación1](./images/agregar_relacion1.png "Agregar Relación1")
+
+Al igual que con los nodos, las relaciones se marcarán con un check verde cuando los datos se ingresen correctamente.
+
+#### Modelo Completo en Data Importer
+
+El modelo final en Data Importer se verá de la siguiente manera:
+
+![Modelo en Data Importer](./images/modelo_completo.png "Modelo en Data Importer")
+
+#### Ejecutar la Importación
+
+Para finalizar, presionamos la opción `Run Import`. Al completar la importación, aparecerá una ventana con los resultados y las consultas realizadas:
+
+![Ejecutar Importación](./images/ejecucion_modelo.png "Ejecutar Importación")
+
+![Resultado Ejecución](./images/ejecucion_result.png "Resultado Ejecución")
+
+#### Verificar Resultados en Neo4j
+
+Podemos verificar los resultados de la importación mediante el navegador de Neo4j. En la sección de [Enlaces de Herramientas Utilizadas](#enlaces-de-herramientas-utilizadas) se encuentra un enlace para acceder a `Neo4j Browser`. Ingresamos los mismos datos de conexión de nuestra instancia.
+
+![Conexión Neo4j Browser](./images/conexion_neo4j_browser.png "Conexión Neo4j Browser")
+
+Alternativamente, podemos ir directamente a `Neo4j Console`, ir a la sección de consultas (query) y ejecutar el siguiente comando:
+
+```sql
+MATCH (n)-[r]->(m) 
+RETURN n, r, m;
+```
+
+![Query en Neo4j Browser](./images/query_browser.png "Query en Neo4j Browser")
+
+![Query en Neo4j Console](./images/query_console.png "Query en Neo4j Console")
+
 ### 5. Importar los Datos Usando Cypher
 
 ## 🔗 Enlaces Útiles
 
-- [Neo4j](https://neo4j.com/)
+### Enlaces de Herramientas Utilizadas
+
 - [Neo4j Console](https://console.neo4j.io/)
-- [Documentación para la Importación de Datos en Neo4j por AuraDB](https://neo4j.com/docs/data-importer/current/)
-- [Documentación para la Importación de Datos en Neo4j Por Cypher](https://neo4j.com/docs/cypher-manual/current/clauses/load-csv/)
+- [Neo4j Browser](https://browser.neo4j.io/)
+- [Data Importer Neo4j](https://data-importer.neo4j.io/)
 - [Arrows App Modelar Datos](https://arrows.app/#/local/id=50Jx0RywfReyZzq4_SXx)
 - [Data Origen CSV](https://github.com/VictorGuevaraP/Mineria-de-datos/blob/master/Ventas%20tienda%20por%20departamento.csv)
+
+### Enlaces de Documentación
+
+- [Neo4j](https://neo4j.com/)
+- [Documentación para la Importación de Datos en Neo4j por AuraDB](https://neo4j.com/docs/data-importer/current/)
+- [Documentación para la Importación de Datos en Neo4j Por Cypher](https://neo4j.com/docs/cypher-manual/current/clauses/load-csv/)
 - [Video Referencia 1](https://www.youtube.com/watch?v=Jro1MMzUAgs)
 - [Video Referencia 2](https://www.youtube.com/watch?v=v-JdvAfRWtQ)

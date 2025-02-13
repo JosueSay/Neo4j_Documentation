@@ -67,7 +67,6 @@ ORDER BY Venta_Promedio DESC;
 // ============================================
 
 // 0. Verificar archivo csv y creación de nuevos constraints
-
 LOAD CSV WITH HEADERS FROM 'https://gist.githubusercontent.com/JosueSay/7bbb5d5504463ce23056d468dd8077e4/raw/abdb23826c36770e3a9d5a4f4544cd53da32b990/ventas_tienda_departamento_formated.csv' AS row
 RETURN count(*) AS total_registros, size(keys(row)) AS total_columnas;
 
@@ -106,7 +105,6 @@ SET v.hora = coalesce(v.hora, row.Hora);
 
 // 5. Crear relaciones entre nodos
 LOAD CSV WITH HEADERS FROM 'https://gist.githubusercontent.com/JosueSay/7bbb5d5504463ce23056d468dd8077e4/raw/abdb23826c36770e3a9d5a4f4544cd53da32b990/ventas_tienda_departamento_formated.csv' AS row FIELDTERMINATOR ','
-WITH row, linenumber() AS line
 MATCH (t:Tienda {nombre: row.Tienda})
 MATCH (m:Marca {nombre: row.Marca})
 MATCH (p:Producto {tipo: row.Tipo})

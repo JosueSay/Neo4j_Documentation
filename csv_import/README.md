@@ -354,34 +354,7 @@ https://gist.githubusercontent.com/JosueSay/7bbb5d5504463ce23056d468dd8077e4/raw
 
 Ambos métodos funcionan. En este caso, utilizaremos **Neo4j Console**, pero los queries también son compatibles con **Neo4j Browser**.
 
----
-
-#### Uso de `LOAD CSV` en Neo4j
-
-- **Función**: Importa datos desde archivos CSV a Neo4j.
-- **Fuentes**:
-  - Archivos locales: `file:///archivo.csv`
-  - URLs remotas: `http://`, `https://`, `ftp://`
-  - Servicios en la nube: `azb://` (Azure), `gs://` (Google Cloud), `s3://` (AWS S3)
-- **Cláusulas clave**:
-  - `LOAD CSV FROM 'url' AS row`: Carga el CSV fila por fila.
-  - `WITH HEADERS`: Usa la primera fila como nombres de columnas.
-  - `MERGE`: Crea o fusiona nodos/relaciones a partir de los datos.
-  - `FIELDTERMINATOR ';'`: Define un delimitador personalizado.
-- **Seguridad**:
-  - Prefiere URLs con `HTTPS`.
-  - Se recomienda configurar permisos en archivos locales.
-- **Manejo de datos**:
-  - Conversión de tipos (`toInteger()`, `date()`, `split()`).
-  - Manejo de valores nulos (`coalesce()`, `nullIf()`).
-  - Uso de listas (`split()`).
-- **Optimización**:
-  - Carga en transacciones (`CALL { ... } IN TRANSACTIONS`).
-  - Creación de restricciones de unicidad antes de importar.
-- **Compatibilidad**:
-  - Soporta importación dinámica de etiquetas y CSV comprimidos (`.zip`, `.gzip`).
-
-Para ver mas detalle de la instrucción LOAD CSV puedes revisar la documentación `detalle_load_csv.md`.
+> **Nota:** Para ver mas detalle de la instrucción LOAD CSV puedes revisar la documentación `detalle_load_csv.md`.
 
 ##### Importación con `LOAD CSV`
 

@@ -82,8 +82,7 @@ WHERE nombre IS NOT NULL
 MERGE (t:Tienda {nombre: nombre});
 
 LOAD CSV WITH HEADERS FROM 'https://gist.githubusercontent.com/JosueSay/7bbb5d5504463ce23056d468dd8077e4/raw/abdb23826c36770e3a9d5a4f4544cd53da32b990/ventas_tienda_departamento_formated.csv' AS row
-CALL {
-  WITH row
+CALL (row) {
   WITH DISTINCT row.Tienda AS nombre
   WHERE nombre IS NOT NULL
   MERGE (t:Tienda {nombre: nombre})

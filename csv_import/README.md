@@ -1,5 +1,18 @@
 # Importación de CSV en AuraDB con Cypher 🚀
 
+- [📌 Conceptos Clave](#-conceptos-clave)  
+  - [CSV (Comma-Separated Values)](#csv-comma-separated-values)  
+  - [TSV (Tab-Separated Values)](#tsv-tab-separated-values)  
+  - [UTF-8 (Formato de Datos)](#utf-8-formato-de-datos)  
+- [📂 Archivos Importantes](#-archivos-importantes)  
+- [🛠️ Pasos para la Importación](#️-pasos-para-la-importación)  
+  - [1. Comprender la Estructura de los Datos](#1-comprender-la-estructura-de-los-datos)  
+  - [2. Diseñar el Modelo de Datos](#2-diseñar-el-modelo-de-datos)  
+  - [3. Preparar los Datos para la Importación](#3-preparar-los-datos-para-la-importación)  
+  - [4. Importar los Datos con Data Importer](#4-importar-los-datos-con-data-importer)  
+  - [5. Importar los Datos Usando Cypher](#5-importar-los-datos-usando-cypher)  
+- [🔗 Enlaces Útiles](#-enlaces-útiles)
+
 ## 📌 Conceptos Clave
 
 ### CSV (Comma-Separated Values)

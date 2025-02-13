@@ -6,15 +6,15 @@
 MATCH (n)-[r]->(m) 
 RETURN n, r, m;
 
+// Eliminar toda la data de la instancia
+MATCH (n)
+DETACH DELETE n;
+
 // Eliminación de constraints
 DROP CONSTRAINT `fecha_Venta_uniq`;
 DROP CONSTRAINT `nombre_Marca_uniq`;
 DROP CONSTRAINT `nombre_Tienda_uniq`;
 DROP CONSTRAINT `tipo_Producto_uniq`;
-
-// Eliminar toda la data de la instancia
-MATCH (n)
-DETACH DELETE n;
 
 // Producto más vendido
 MATCH (p:Producto)<-[r:INCLUYE]-()
@@ -71,10 +71,10 @@ ORDER BY Venta_Promedio DESC;
 LOAD CSV WITH HEADERS FROM 'https://gist.githubusercontent.com/JosueSay/7bbb5d5504463ce23056d468dd8077e4/raw/abdb23826c36770e3a9d5a4f4544cd53da32b990/ventas_tienda_departamento_formated.csv' AS row
 RETURN count(*) AS total_registros, size(keys(row)) AS total_columnas;
 
-CREATE CONSTRAINT nombre_Tienda_uniq IF NOT EXISTS FOR (t:Tienda) REQUIRE t.nombre IS UNIQUE;
-CREATE CONSTRAINT nombre_Marca_uniq IF NOT EXISTS FOR (m:Marca) REQUIRE m.nombre IS UNIQUE;
-CREATE CONSTRAINT tipo_Producto_uniq IF NOT EXISTS FOR (p:Producto) REQUIRE p.tipo IS UNIQUE;
-CREATE CONSTRAINT fecha_Venta_uniq IF NOT EXISTS FOR (v:Venta) REQUIRE v.fecha IS UNIQUE;
+CREATE CONSTRAINT nombre_Tienda_uniq FOR (t:Tienda) REQUIRE t.nombre IS UNIQUE;
+CREATE CONSTRAINT nombre_Marca_uniq FOR (m:Marca) REQUIRE m.nombre IS UNIQUE;
+CREATE CONSTRAINT tipo_Producto_uniq FOR (p:Producto) REQUIRE p.tipo IS UNIQUE;
+CREATE CONSTRAINT fecha_Venta_uniq FOR (v:Venta) REQUIRE v.fecha IS UNIQUE;
 
 // 1. Crear nodos de Tienda
 LOAD CSV WITH HEADERS FROM 'https://gist.githubusercontent.com/JosueSay/7bbb5d5504463ce23056d468dd8077e4/raw/abdb23826c36770e3a9d5a4f4544cd53da32b990/ventas_tienda_departamento_formated.csv' AS row FIELDTERMINATOR ','
